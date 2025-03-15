@@ -86,12 +86,6 @@ To delete the AKS cluster:
 ```sh
 az aks delete --name myAKSCluster --resource-group myResourceGroup --yes --no-wait
 ```
-
----
-
-## **📜 License**
-This project is open-source and available under the [MIT License](LICENSE).
-
 ---
 
 ## **🎉 Congratulations!**  
