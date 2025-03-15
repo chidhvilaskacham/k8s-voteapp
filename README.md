@@ -82,7 +82,7 @@ kubectl config set-context --current --namespace k8s-voteapp
 ### Create MongoDB Deployment
 
 ```sh
-kubectl apply -f manifests/mongo-deployment.yaml
+kubectl apply -f mongo-deployment.yaml
 ```
 
 ### Verify MongoDB DNS Resolution
@@ -139,7 +139,7 @@ EOF
 ## Step 9: Deploy the API
 
 ```sh
-kubectl apply -f manifests/api-deployment.yaml
+kubectl apply -f api-deployment.yaml
 ```
 
 ## Step 10: Get API Endpoint and Test
@@ -153,7 +153,7 @@ curl -s $API_ELB_PUBLIC_FQDN/languages | jq .
 ## Step 11: Deploy the Frontend
 
 ```sh
-kubectl apply -f manifests/frontend-deployment.yaml
+kubectl apply -f frontend-deployment.yaml
 ```
 
 ## Step 12: Get Frontend URL
