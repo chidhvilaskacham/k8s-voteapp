@@ -5,7 +5,27 @@ This guide provides steps to deploy a cloud-native voting application on Azure K
 ## Prerequisites
 
 1. **Azure CLI**: Install and configure Azure CLI.
+   - Install Azure CLI:
+     ```sh
+     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+     ```
+   - Verify installation:
+     ```sh
+     az --version
+     ```
+
 2. **kubectl**: Install Kubernetes CLI.
+   - Install kubectl:
+     ```sh
+     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+     chmod +x kubectl
+     sudo mv kubectl /usr/local/bin/
+     ```
+   - Verify installation:
+     ```sh
+     kubectl version --client
+     ```
+
 3. **Helm**: Install Helm for package management.
 4. **Azure Subscription**: Ensure you have an active Azure subscription.
 5. **Git**: Install Git for cloning the repository.
