@@ -1,3 +1,4 @@
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -11,12 +12,13 @@ spec:
       storage: 1Gi
 ---
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: mongo
   namespace: k8s-voteapp
 spec:
-  replicas: 1
+  serviceName: mongo-service
+  replicas: 3
   selector:
     matchLabels:
       app: mongo
@@ -38,10 +40,15 @@ spec:
           value: "admin"
         - name: MONGO_INITDB_ROOT_PASSWORD
           value: "password"
-      volumes:
-      - name: mongo-storage
-        persistentVolumeClaim:
-          claimName: mongo-pvc
+        command: ["mongod", "--replSet", "rs0", "--bind_ip_all"]
+  volumeClaimTemplates:
+  - metadata:
+      name: mongo-storage
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
@@ -49,10 +56,10 @@ metadata:
   name: mongo-service
   namespace: k8s-voteapp
 spec:
+  clusterIP: None
   selector:
     app: mongo
   ports:
     - protocol: TCP
       port: 27017
       targetPort: 27017
-  type: ClusterIP
