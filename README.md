@@ -66,7 +66,7 @@ kubectl get nodes
 ## Step 5: Clone the GitHub Repository
 
 ```sh
-git clone https://github.com/N4si/K8s-voting-app.git
+git clone https://github.com/chidhvilaskacham/k8s-voteapp.git
 cd K8s-voting-app
 ```
 
