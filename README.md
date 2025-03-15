@@ -95,21 +95,29 @@ exit
 
 ### Initialize MongoDB Replica Set
 
-```sh
-kubectl exec -it mongo-0 -- mongo <<EOF
-rs.initiate();
-sleep(2000);
-rs.add("mongo-1.mongo:27017");
-sleep(2000);
-rs.add("mongo-2.mongo:27017");
-sleep(2000);
-cfg = rs.conf();
-cfg.members[0].host = "mongo-0.mongo:27017";
-rs.reconfig(cfg, {force: true});
-sleep(5000);
-EOF
-```
+# Initialize the MongoDB replica set
+kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval "rs.initiate()"
 
+# Wait for the replica set to initialize
+Start-Sleep -Seconds 2
+
+# Add the first member (mongo-1)
+kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval 'rs.add("mongo-1.mongo-service:27017")'
+
+# Wait for the member to be added
+Start-Sleep -Seconds 2
+
+# Add the second member (mongo-2)
+kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval 'rs.add("mongo-2.mongo-service:27017")'
+
+# Wait for the member to be added
+Start-Sleep -Seconds 2
+
+# Reconfigure the replica set to ensure the primary is correctly set
+kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval 'cfg = rs.conf(); cfg.members[0].host = "mongo-0.mongo-service:27017"; rs.reconfig(cfg, {force: true})'
+
+# Wait for the reconfiguration to complete
+Start-Sleep -Seconds 5
 ### Verify MongoDB Replica Set
 
 ```sh
