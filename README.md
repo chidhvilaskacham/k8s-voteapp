@@ -95,30 +95,31 @@ exit
 
 ### Initialize MongoDB Replica Set
 
-# Initialize the MongoDB replica set
-kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval "rs.initiate()"
 
-# Wait for the replica set to initialize
+# Wait for the Pods to be ready
+Write-Host "Waiting for MongoDB Pods to be ready..."
+Start-Sleep -Seconds 30
+
+# Initialize the replica set
+Write-Host "Initializing MongoDB Replica Set..."
+kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval "rs.initiate()"
 Start-Sleep -Seconds 2
 
 # Add the first member (mongo-1)
 kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval 'rs.add("mongo-1.mongo-service:27017")'
-
-# Wait for the member to be added
 Start-Sleep -Seconds 2
 
 # Add the second member (mongo-2)
 kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval 'rs.add("mongo-2.mongo-service:27017")'
-
-# Wait for the member to be added
 Start-Sleep -Seconds 2
 
-# Reconfigure the replica set to ensure the primary is correctly set
+# Reconfigure the replica set
 kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval 'cfg = rs.conf(); cfg.members[0].host = "mongo-0.mongo-service:27017"; rs.reconfig(cfg, {force: true})'
-
-# Wait for the reconfiguration to complete
 Start-Sleep -Seconds 5
-### Verify MongoDB Replica Set
+
+# Verify the replica set status
+Write-Host "Verifying Replica Set Status..."
+kubectl exec -it mongo-0 -n k8s-voteapp -- mongo --username admin --password password --authenticationDatabase admin --eval "rs.status()"
 
 ```sh
 kubectl exec -it mongo-0 -- mongo --eval "rs.status()" | grep "PRIMARY\|SECONDARY"
