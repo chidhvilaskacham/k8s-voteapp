@@ -5,16 +5,23 @@ This guide provides steps to deploy a cloud-native voting application on Azure K
 ## Prerequisites
 
 1. **Azure CLI**: Install and configure Azure CLI.
-   - Install Azure CLI:
-     ```sh
-     curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+   - Install Azure CLI using PowerShell:
+     ```powershell
+     Start-Process "https://aka.ms/installazurecliwindows"
      ```
+   - Follow the installation wizard to complete the setup.
    - Verify installation:
-     ```sh
+     ```powershell
      az --version
+     ```
+   - Log in to Azure:
+     ```powershell
+     az login
      ```
 
 2. **kubectl**: Install Kubernetes CLI.
+
    - Install kubectl:
      ```sh
      curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -27,7 +34,9 @@ This guide provides steps to deploy a cloud-native voting application on Azure K
      ```
 
 3. **Helm**: Install Helm for package management.
+
 4. **Azure Subscription**: Ensure you have an active Azure subscription.
+
 5. **Git**: Install Git for cloning the repository.
 
 ## Step 1: Create an Azure Resource Group
@@ -112,8 +121,17 @@ kubectl exec -it mongo-0 -- mongo --eval "rs.status()" | grep "PRIMARY\|SECONDAR
 ```sh
 kubectl exec -it mongo-0 -- mongo <<EOF
 use langdb;
-db.languages.insert({"name" : "python", "codedetail" : { "usecase" : "system, web, server-side", "rank" : 3, "script" : false, "homepage" : "https://www.python.org/", "download" : "https://www.python.org/downloads/", "votes" : 0}});
-db.languages.insert({"name" : "javascript", "codedetail" : { "usecase" : "web, client-side", "rank" : 7, "script" : false, "homepage" : "https://en.wikipedia.org/wiki/JavaScript", "download" : "n/a", "votes" : 0}});
+tools = {
+    "Ansible": {"uses": "Configuration management, automation", "votes": 0},
+    "Visual_studio": {"uses": "IDE for software development", "votes": 0},
+    "Docker": {"uses": "Containerization platform", "votes": 0},
+    "Prometheus": {"uses": "Monitoring and alerting toolkit", "votes": 0},
+    "Git": {"uses": "Version control system", "votes": 0},
+    "Jenkins": {"uses": "Continuous integration and delivery", "votes": 0}
+};
+for (var tool in tools) {
+    db.languages.insert({"name": tool, "details": tools[tool]});
+}
 db.languages.find().pretty();
 EOF
 ```
