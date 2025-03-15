@@ -17,7 +17,7 @@ This guide provides steps to deploy a cloud-native voting application on Azure K
      ```
    - Log in to Azure:
      ```powershell
-     az login
+     az login --allow-no-subscriptions
      ```
 
 2. **kubectl**: Install Kubernetes CLI.
@@ -48,7 +48,7 @@ az group create --name AKSResourceGroup --location eastus
 ## Step 2: Create an AKS Cluster
 
 ```sh
-az aks create --resource-group AKSResourceGroup --name MyAKSCluster --node-count 2 --node-vm-size Standard_D2s_v3 --enable-addons monitoring --generate-ssh-keys
+az aks create --resource-group AKSResourceGroup --name MyAKSCluster --node-count 1 --node-vm-size Standard_B2s --enable-addons monitoring --generate-ssh-keys --tier free
 ```
 
 ## Step 3: Configure kubectl to Connect to AKS
@@ -179,4 +179,5 @@ kubectl exec -it mongo-0 -- mongo langdb --eval "db.languages.find().pretty()"
 az aks delete --name MyAKSCluster --resource-group AKSResourceGroup --yes --no-wait
 az group delete --name AKSResourceGroup --yes --no-wait
 ```
+
 
