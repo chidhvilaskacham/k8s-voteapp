@@ -1,94 +1,144 @@
-# React Frontend, Golang Backend & MongoDB on AKS
+# Deploying a Kubernetes Voting App on Azure Kubernetes Service (AKS)
 
-This repository contains Kubernetes configurations to deploy a **React frontend, Golang backend, and MongoDB** on **Azure Kubernetes Service (AKS)** inside the `k8s-voteapp` namespace with **public-facing Load Balancers**.
+This guide provides steps to deploy a cloud-native voting application on Azure Kubernetes Service (AKS). The application consists of a frontend, a backend API, and a MongoDB database.
 
-## **📌 Prerequisites**
-Ensure you have the following installed on your machine:
-- [Docker](https://www.docker.com/get-started)
-- [kubectl](https://kubernetes.io/docs/tasks/tools/)
-- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
-- [AKS Cluster](https://learn.microsoft.com/en-us/azure/aks/kubernetes-walkthrough)
+## Prerequisites
 
----
+1. **Azure CLI**: Install and configure Azure CLI.
+2. **kubectl**: Install Kubernetes CLI.
+3. **Helm**: Install Helm for package management.
+4. **Azure Subscription**: Ensure you have an active Azure subscription.
+5. **Git**: Install Git for cloning the repository.
 
-## **🚀 Steps to Deploy**
+## Step 1: Create an Azure Resource Group
 
-### **1️⃣ Create the Namespace**
 ```sh
-kubectl create namespace k8s-voteapp
+az group create --name AKSResourceGroup --location eastus
 ```
 
-### **2️⃣ Deploy MongoDB**
+## Step 2: Create an AKS Cluster
+
 ```sh
-kubectl apply -f mongo-deployment.yaml
+az aks create --resource-group AKSResourceGroup --name MyAKSCluster --node-count 2 --node-vm-size Standard_D2s_v3 --enable-addons monitoring --generate-ssh-keys
 ```
-This will deploy MongoDB with a **ClusterIP service**.
 
-### **3️⃣ Deploy Golang Backend**
+## Step 3: Configure kubectl to Connect to AKS
+
 ```sh
-kubectl apply -f backend-deployment.yaml
+az aks get-credentials --resource-group AKSResourceGroup --name MyAKSCluster
 ```
-- The backend is exposed via a **public LoadBalancer**.
-- It connects to MongoDB using: `mongodb://admin:password@mongo-service:27017`.
 
-### **4️⃣ Deploy React Frontend**
+## Step 4: Verify the Cluster
+
 ```sh
-kubectl apply -f frontend-deployment.yaml
+kubectl get nodes
 ```
-- The frontend is exposed via a **public LoadBalancer**.
-- It uses an environment variable to connect to the backend API.
 
----
+## Step 5: Clone the GitHub Repository
 
-## **📡 Verify Deployment**
-### **Check Pods & Deployments**
 ```sh
-kubectl get pods -n k8s-voteapp
-kubectl get deployments -n k8s-voteapp
+git clone https://github.com/N4si/K8s-voting-app.git
+cd K8s-voting-app
 ```
-### **Check Services (External IPs)**
+
+## Step 6: Create a Kubernetes Namespace
+
 ```sh
-kubectl get services -n k8s-voteapp
-```
-Example output:
-```
-NAME                    TYPE           EXTERNAL-IP       PORT(S)
-go-backend-service      LoadBalancer   52.165.32.45      8080:30201/TCP
-react-frontend-service  LoadBalancer   52.150.28.12      80:30987/TCP
+kubectl create ns k8s-voteapp
+kubectl config set-context --current --namespace k8s-voteapp
 ```
 
-🔹 **Frontend Access:** `http://52.150.28.12`
-🔹 **Backend Access:** `http://52.165.32.45:8080`
+## Step 7: Deploy MongoDB
 
----
+### Create MongoDB Deployment
 
-## **🔄 Updating Images**
-If you make changes to the frontend/backend, rebuild & push images:
 ```sh
-docker build -t your-docker-hub-username/my-react-app .
-docker push your-docker-hub-username/my-react-app
-kubectl rollout restart deployment react-frontend -n k8s-voteapp
+kubectl apply -f manifests/mongo-deployment.yaml
 ```
+
+### Verify MongoDB DNS Resolution
+
 ```sh
-docker build -t your-docker-hub-username/my-go-app .
-docker push your-docker-hub-username/my-go-app
-kubectl rollout restart deployment go-backend -n k8s-voteapp
+kubectl run --rm utils -it --image praqma/network-multitool -- bash
+for i in {0..2}; do nslookup mongo-$i.mongo; done
+exit
 ```
 
----
+### Initialize MongoDB Replica Set
 
-## **🗑 Cleanup**
-To delete the deployments:
 ```sh
-kubectl delete namespace k8s-voteapp
+kubectl exec -it mongo-0 -- mongo <<EOF
+rs.initiate();
+sleep(2000);
+rs.add("mongo-1.mongo:27017");
+sleep(2000);
+rs.add("mongo-2.mongo:27017");
+sleep(2000);
+cfg = rs.conf();
+cfg.members[0].host = "mongo-0.mongo:27017";
+rs.reconfig(cfg, {force: true});
+sleep(5000);
+EOF
 ```
-To delete the AKS cluster:
+
+### Verify MongoDB Replica Set
+
 ```sh
-az aks delete --name myAKSCluster --resource-group myResourceGroup --yes --no-wait
+kubectl exec -it mongo-0 -- mongo --eval "rs.status()" | grep "PRIMARY\|SECONDARY"
 ```
----
 
-## **🎉 Congratulations!**  
-You have successfully deployed a **React-Golang-MongoDB app** on **Azure Kubernetes Service (AKS)**! 🚀
+## Step 8: Load Data into MongoDB
 
+```sh
+kubectl exec -it mongo-0 -- mongo <<EOF
+use langdb;
+db.languages.insert({"name" : "python", "codedetail" : { "usecase" : "system, web, server-side", "rank" : 3, "script" : false, "homepage" : "https://www.python.org/", "download" : "https://www.python.org/downloads/", "votes" : 0}});
+db.languages.insert({"name" : "javascript", "codedetail" : { "usecase" : "web, client-side", "rank" : 7, "script" : false, "homepage" : "https://en.wikipedia.org/wiki/JavaScript", "download" : "n/a", "votes" : 0}});
+db.languages.find().pretty();
+EOF
+```
+
+## Step 9: Deploy the API
+
+```sh
+kubectl apply -f manifests/api-deployment.yaml
+```
+
+## Step 10: Get API Endpoint and Test
+
+```sh
+API_ELB_PUBLIC_FQDN=$(kubectl get svc api -ojsonpath="{.status.loadBalancer.ingress[0].hostname}")
+curl $API_ELB_PUBLIC_FQDN/ok
+curl -s $API_ELB_PUBLIC_FQDN/languages | jq .
+```
+
+## Step 11: Deploy the Frontend
+
+```sh
+kubectl apply -f manifests/frontend-deployment.yaml
+```
+
+## Step 12: Get Frontend URL
+
+```sh
+FRONTEND_ELB_PUBLIC_FQDN=$(kubectl get svc frontend -ojsonpath="{.status.loadBalancer.ingress[0].hostname}")
+echo http://$FRONTEND_ELB_PUBLIC_FQDN
+```
+
+## Step 13: Test the Application
+
+Open the frontend URL in a browser and interact with the voting application.
+
+## Step 14: Query MongoDB for Updated Votes
+
+```sh
+kubectl exec -it mongo-0 -- mongo langdb --eval "db.languages.find().pretty()"
+```
+
+## Cleanup Resources
+
+```sh
+az aks delete --name MyAKSCluster --resource-group AKSResourceGroup --yes --no-wait
+az group delete --name AKSResourceGroup --yes --no-wait
+```
 
