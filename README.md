@@ -49,13 +49,13 @@ If you encounter a (MissingSubscriptionRegistration) error when creating the AKS
 
 ```sh
 az provider register --namespace Microsoft.ContainerService
-```sh
+```
 
 Verify the registration status:
 
 ```sh
 az provider show --namespace Microsoft.ContainerService --query "registrationState"
-```sh
+```
 Wait until the registration state is Registered before proceeding.
 
 ## Step 2: Create an AKS Cluster
