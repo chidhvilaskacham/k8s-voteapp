@@ -49,3 +49,20 @@ spec:
         resources:
           requests:
             storage: 0.5Gi
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo
+  namespace: k8s-voteapp
+  labels:
+    role: db
+    env: demo
+spec:
+  ports:
+  - port: 27017
+    targetPort: 27017
+  clusterIP: None
+  selector:
+    role: db
