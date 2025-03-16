@@ -1,5 +1,3 @@
----
-# StatefulSet
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -18,16 +16,6 @@ spec:
         env: demo
         replicaset: rs0.main
     spec:
-      affinity:
-        podAntiAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            - labelSelector:
-                matchExpressions:
-                  - key: replicaset
-                    operator: In
-                    values:
-                      - rs0.main
-              topologyKey: kubernetes.io/hostname
       terminationGracePeriodSeconds: 10
       containers:
         - name: mongo
@@ -61,18 +49,3 @@ spec:
         resources:
           requests:
             storage: 0.5Gi
----
-# Service
-apiVersion: v1
-kind: Service
-metadata:
-  name: mongo
-  namespace: k8s-voteapp
-spec:
-  clusterIP: None
-  selector:
-    role: db
-  ports:
-    - protocol: TCP
-      port: 27017
-      targetPort: 27017
