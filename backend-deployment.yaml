@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: go-backend
-        image: chidhvilas/api:v2
+        image: chidhvilas/api:latest
         ports:
         - containerPort: 8080
         env:
