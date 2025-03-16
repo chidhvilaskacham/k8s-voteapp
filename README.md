@@ -44,11 +44,24 @@ This guide provides steps to deploy a cloud-native voting application on Azure K
 ```sh
 az group create --name AKSResourceGroup --location eastus
 ```
+## Step 2: Register the ContainerService Provider
+If you encounter a (MissingSubscriptionRegistration) error when creating the AKS cluster, register the Microsoft.ContainerService provider:
+
+```sh
+az provider register --namespace Microsoft.ContainerService
+```sh
+
+Verify the registration status:
+
+```sh
+az provider show --namespace Microsoft.ContainerService --query "registrationState"
+```sh
+Wait until the registration state is Registered before proceeding.
 
 ## Step 2: Create an AKS Cluster
 
 ```sh
-az aks create --resource-group AKSResourceGroup --name MyAKSCluster --node-count 1 --node-vm-size Standard_B2s --enable-addons monitoring --generate-ssh-keys --tier free
+az aks create --resource-group AKSResourceGroup --name MyAKSCluster --node-count 1 --node-vm-size Standard_B2s  --generate-ssh-keys --tier free
 ```
 
 ## Step 3: Configure kubectl to Connect to AKS
