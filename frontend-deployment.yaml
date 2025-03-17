@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
       - name: react-frontend
-        image: chidhvilas/frontend:v2
+        image: chidhvilas/frontend:latest
         ports:
         - containerPort: 80
         env:
