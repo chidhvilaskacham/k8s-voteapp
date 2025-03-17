@@ -102,9 +102,8 @@ This guide provides step-by-step instructions to deploy a cloud-native voting ap
     ```
 11. **Get API Endpoint and Test:**
     ```sh
-    REACT_APP_BACKEND_URL=$(kubectl get svc go-backend-service -ojsonpath="{.status.loadBalancer.ingress[0].hostname}")
-    curl $REACT_APP_BACKEND_URL/ok
-    curl -s $REACT_APP_BACKEND_URL/tools | jq .
+    BACKEND_IP=$(kubectl get svc go-backend-service -n k8s-voteapp -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+    echo $BACKEND_IP
     ```
 12. **Deploy the Frontend:**
     ```sh
