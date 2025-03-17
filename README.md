@@ -102,9 +102,9 @@ This guide provides step-by-step instructions to deploy a cloud-native voting ap
     ```
 11. **Get API Endpoint and Test:**
     ```sh
-    API_ELB_PUBLIC_FQDN=$(kubectl get svc go-backend-service -ojsonpath="{.status.loadBalancer.ingress[0].hostname}")
-    curl $API_ELB_PUBLIC_FQDN/ok
-    curl -s $API_ELB_PUBLIC_FQDN/tools | jq .
+    REACT_APP_BACKEND_URL=$(kubectl get svc go-backend-service -ojsonpath="{.status.loadBalancer.ingress[0].hostname}")
+    curl $REACT_APP_BACKEND_URL/ok
+    curl -s $REACT_APP_BACKEND_URL/tools | jq .
     ```
 12. **Deploy the Frontend:**
     ```sh
