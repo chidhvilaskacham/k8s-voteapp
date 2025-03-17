@@ -40,7 +40,7 @@ This guide provides step-by-step instructions to deploy a cloud-native voting ap
     ```
 6.  **Clone the GitHub Repository:**
     ```sh
-    git clone [https://github.com/chidhvilaskacham/k8s-voteapp.git](https://github.com/chidhvilaskacham/k8s-voteapp.git)
+    git clone https://github.com/chidhvilaskacham/k8s-voteapp.git
     cd k8s-voteapp
     ```
 7.  **Create a Kubernetes Namespace:**
